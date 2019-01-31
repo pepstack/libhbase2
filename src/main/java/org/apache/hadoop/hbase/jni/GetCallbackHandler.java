@@ -25,33 +25,33 @@ import org.hbase.async.KeyValue;
 import com.stumbleupon.async.Callback;
 
 public class GetCallbackHandler<R, T> implements Callback<R, T> {
-  private final long callback;
-  private final long extra;
-  private final long client;
-  private final long get;
-  private GetProxy getProxy;
+    private final long callback;
+    private final long extra;
+    private final long client;
+    private final long get;
+    private GetProxy getProxy;
 
-  public GetCallbackHandler(GetProxy getProxy, long callback, long client, long get, long extra) {
-    this.getProxy = getProxy;
-    this.callback = callback;
-    this.client = client;
-    this.get = get;
-    this.extra = extra;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public R call(T arg) throws Exception {
-    ResultProxy result = null;
-    Throwable t = null;
-    if (arg instanceof Throwable) {
-      t = (Throwable) arg;
-    } else if (arg != null && arg instanceof ArrayList<?>) {
-      result = new ResultProxy(getProxy.getTable(), getProxy.getNamespace(),
-          (ArrayList<KeyValue>) arg);
+    public GetCallbackHandler(GetProxy getProxy, long callback, long client, long get, long extra) {
+        this.getProxy = getProxy;
+        this.callback = callback;
+        this.client = client;
+        this.get = get;
+        this.extra = extra;
     }
-    CallbackHandlers.getCallBack(t,
-        callback, client, get, result, extra);
-    return null;
-  }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public R call(T arg) throws Exception {
+        ResultProxy result = null;
+        Throwable t = null;
+
+        if (arg instanceof Throwable) {
+            t = (Throwable) arg;
+        } else if (arg != null && arg instanceof ArrayList<?>) {
+            result = new ResultProxy(getProxy.getTable(), getProxy.getNamespace(), (ArrayList<KeyValue>) arg);
+        }
+
+        CallbackHandlers.getCallBack(t, callback, client, get, result, extra);
+        return null;
+    }
 }

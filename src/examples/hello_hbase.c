@@ -35,8 +35,13 @@ extern  "C" {
 
 #define HTABLE_NAME  "libhbase_test"
 
-/* "ha08.ztgame.com:2181,ha07.ztgame.com:2181,ha06.ztgame.com:2181" */
+/* = hbase.zookeeper.ensemble
+ *   "zkhost:zkport,zkhost2:zkport,zkhost3:zkport,..."
+ */
 #define ZK_QUORUM    "localhost:2181"
+
+/* = zookeeper.znode.parent */
+#define ZK_ZNODE_ROOT   NULL
 
 
 static int ensure_hbase_table (hb_connection_t connection, const char *table_name)
@@ -160,11 +165,11 @@ int main (int argc, char *argv[])
     if (argc > 1) {
         printf("ZK_QUORUM='%s'\n", argv[1]);
 
-        rc = hb_connection_create(argv[1], 0, &connection);
+        rc = hb_connection_create(argv[1], ZK_ZNODE_ROOT, &connection);
     } else {
         printf("ZK_QUORUM='%s'\n", ZK_QUORUM);
 
-        rc = hb_connection_create(ZK_QUORUM, 0, &connection);
+        rc = hb_connection_create(ZK_QUORUM, ZK_ZNODE_ROOT, &connection);
     }
 
     if (rc == 0) {

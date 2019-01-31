@@ -22,25 +22,24 @@ import com.stumbleupon.async.Callback;
 
 public class ClientShutdownCallback<R, T> implements Callback<R, T> {
 
-  private long callback;
-  private long client;
-  private long extra;
+    private long callback;
+    private long client;
+    private long extra;
 
-  public ClientShutdownCallback(long callback, long client, long extra) {
-    this.callback = callback;
-    this.client = client;
-    this.extra = extra;
-  }
-
-  @Override
-  public R call(T arg) throws Exception {
-    Throwable t = null;
-    if (arg instanceof Throwable) {
-      t = (Throwable) arg;
+    public ClientShutdownCallback(long callback, long client, long extra) {
+        this.callback = callback;
+        this.client = client;
+        this.extra = extra;
     }
-    CallbackHandlers.clientCloseCallBack(t,
-        callback, client, extra);
-    return null;
-  }
 
+    @Override
+    public R call(T arg) throws Exception {
+        Throwable t = null;
+        if (arg instanceof Throwable) {
+            t = (Throwable) arg;
+        }
+
+        CallbackHandlers.clientCloseCallBack(t, callback, client, extra);
+        return null;
+    }
 }

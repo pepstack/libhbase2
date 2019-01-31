@@ -48,7 +48,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>native-maven-plugin</artifactId>
-        <version>1.0-alpha-7</version>
+        <version>1.0-alpha-9</version>
         <extensions>true</extensions>
         <executions>
           <execution>
@@ -69,11 +69,11 @@
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.8.0</version>
         <!--$NO-MVN-MAN-VER$ -->
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
 
@@ -194,7 +194,7 @@
                   <pluginExecutionFilter>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>native-maven-plugin</artifactId>
-                    <versionRange>[1.0-alpha-7,)</versionRange>
+                    <versionRange>[1.0-alpha-9,)</versionRange>
                     <goals>
                       <goal>javah</goal>
                     </goals>

@@ -20,37 +20,33 @@ package org.apache.hadoop.hbase.jni;
 
 public class CallbackHandlers {
 
-  private static volatile boolean nativeLibLoaded = false;
-  static {
-    try {
-      synchronized (CallbackHandlers.class) {
-        System.loadLibrary("hbase");
-        nativeLibLoaded = true;
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+    private static volatile boolean nativeLibLoaded = false;
+
+    static {
+        try {
+            synchronized (CallbackHandlers.class) {
+                // load "libhbase2.so"
+                System.loadLibrary("hbase2");
+                nativeLibLoaded = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-  }
 
-  public static boolean isNativeLibLoaded() {
-    return nativeLibLoaded;
-  }
+    public static boolean isNativeLibLoaded() {
+        return nativeLibLoaded;
+    }
 
-  public static native void mutationCallBack(Throwable t,
-      long callback, long client, long mutation, Object result, long extra);
+    public static native void mutationCallBack(Throwable t, long callback, long client, long mutation, Object result, long extra);
 
-  public static native void getCallBack(Throwable t,
-      long callback, long client, long get, Object result, long extra);
+    public static native void getCallBack(Throwable t, long callback, long client, long get, Object result, long extra);
 
-  public static native void clientFlushCallBack(Throwable t,
-      long callback, long client, long extra);
+    public static native void clientFlushCallBack(Throwable t, long callback, long client, long extra);
 
-  public static native void clientCloseCallBack(Throwable t,
-      long callback, long client, long extra);
+    public static native void clientCloseCallBack(Throwable t, long callback, long client, long extra);
 
-  public static native void scannerCloseCallBack(Throwable t,
-      long callback, long scanner, long extra);
+    public static native void scannerCloseCallBack(Throwable t, long callback, long scanner, long extra);
 
-  public static native void scanNextCallBack(Throwable t,
-      long callback, long scanner, Object[] results, int numResults, long extra);
+    public static native void scanNextCallBack(Throwable t, long callback, long scanner, Object[] results, int numResults, long extra);
 }

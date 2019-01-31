@@ -112,7 +112,6 @@ public class GetProxy extends RowProxy {
                             int i = 0;
                             for (byte[] qualifier : qualifierSet) {
                                 qualifiers[i] = qualifier;
-
                                 ++i;
                             }
 

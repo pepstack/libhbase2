@@ -1,17 +1,29 @@
-# libHBase-1.0.0
+# libhbase2-1.0.0
 
-"C" APIs for HBase.
+"C" APIs for HBase for the lastest hadoop and hbase api (NOT the Thrift !).
 
-    hbase-0.94
-    hadoop-1.0.3
-    java8
+    hbase-3
+    hadoop-3
+    jdk1.8
 
 移除了对 [gtest](http://googletest.googlecode.com/files/gtest-1.7.0.zip) 的下载 !
 
-## Building libHBase
+
+## Remove old jdk (less than 1.8) on dev PC first
+
+For example:
+
+   - java-1.7.0-openjdk-1.7.0.9-2.3.8.0.el6_4.i686
+   - java-1.6.0-openjdk-1.6.0.0-1.57.1.11.9.el6_4.i686
+
+	yum -y remove java-1.7.0-openjdk-1.7.0.9-2.3.8.0.el6_4.i686
+    yum -y remove java-1.6.0-openjdk-1.6.0.0-1.57.1.11.9.el6_4.i686
+
+## Building libhbase2 under project folder
 
 ```
-  sh install.sh
+  $ mvn clean
+  $ sh install.sh
 ```
 
 This will build the tarball (libhbase-1.0-SNAPSHOT.tar.gz) containing the headers, shared library and the jars in the `target` directory with the following structure.
@@ -24,8 +36,8 @@ This will build the tarball (libhbase-1.0-SNAPSHOT.tar.gz) containing the header
 +---lib
 |   \---native
 \---src
-    \---examples
-        \---async
+\---examples
+\---async
 ```
 
 The headers can be found under `include` folder while the shared library to link against is under `lib/native`.
@@ -51,7 +63,7 @@ You may find libjvm.so on linux in below path:
 A performance test is included with the library which currently support sequential/random gets and puts. You can run the tests using this [shell script](bin/perftest.sh).
 
 
-## Using the libhbase Library
+## Using the libhbase2 Library
 
 ### refer:
 
