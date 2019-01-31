@@ -24,62 +24,62 @@ import java.util.Map;
 import org.apache.hadoop.hbase.client.Durability;
 import org.apache.hadoop.hbase.client.Mutation;
 import org.apache.hadoop.hbase.client.Put;
+
 import org.hbase.async.HBaseClient;
 import org.hbase.async.KeyValue;
 import org.hbase.async.PutRequest;
 
+/**
+ * http://opentsdb.github.io/asynchbase/javadoc/org/hbase/async/PutRequest.html
+ */
+
 public class PutProxy extends MutationProxy {
-  public PutProxy(byte[] row) {
-    this.row_ = row;
-  }
-
-  @Override
-  public Mutation toHBaseMutation() {
-    final Put put = new Put(row_);
-    put.setDurability(durability_);
-    for (byte[] family : familyMap.keySet()) {
-      final List<KeyValue> kvList = familyMap.get(family);
-      final int numKVs = kvList.size();
-      for (int i = 0; i < numKVs; i++) {
-        KeyValue kv = kvList.get(i);
-        //??put.add(kv.family(), kv.qualifier(), kv.timestamp(), kv.value());
-      }
+    public PutProxy(byte[] row) {
+        this.row_ = row;
     }
-    return put;
-  }
 
-  @Override
-  public void send(final HBaseClient client,
-      final MutationCallbackHandler<Object, Object> cbh) {
-    final Map<byte[], List<KeyValue>> familyMap = getFamilyMap();
-    final int numFamilies = familyMap.size();
-    final byte[][] families = new byte[numFamilies][];
-    final byte[][][] qualifiers = new byte[numFamilies][][];
-    final byte[][][] values = new byte[numFamilies][][];
-    final long[][] timestamps = new long[numFamilies][];
-    int idx = 0;
-    for (byte[] family : familyMap.keySet()) {
-      families[idx] = family;
-      final List<KeyValue> kvList = familyMap.get(family);
-      final int numKVs = kvList.size();
-      qualifiers[idx] = new byte[numKVs][];
-      values[idx] = new byte[numKVs][];
-      timestamps[idx] = new long[numKVs];
-      for (int i = 0; i < numKVs; i++) {
-        KeyValue kv = kvList.get(i);
-        qualifiers[idx][i] = kv.qualifier();
-        values[idx][i] = kv.value();
-        timestamps[idx][i] = kv.timestamp();
-      }
-      idx++;
+    @Override
+    public Mutation toHBaseMutation() {
+        final Put put = new Put(row_);
+
+        put.setDurability(durability_);
+
+        for (byte[] family : familyMap.keySet()) {
+            final List<KeyValue> kvList = familyMap.get(family);
+            final int numKVs = kvList.size();
+
+            for (int i = 0; i < numKVs; i++) {
+                KeyValue kv = kvList.get(i);
+
+                put.addColumn(kv.family(), kv.qualifier(), kv.timestamp(), kv.value());
+            }
+        }
+
+        return put;
     }
-    //??final PutRequest put = new PutRequest(getTable(), getRow(), families, qualifiers, values, timestamps);
-    final PutRequest put = null;
 
-    // set attributes
-    put.setDurable(getDurability() != Durability.SKIP_WAL);
-    put.setBufferable(isBufferable());
-    // hand over and attach callback
-    client.put(put).addBoth(cbh);
-  }
+    @Override
+    public void send(final HBaseClient client, final MutationCallbackHandler<Object, Object> cbh) {
+        final Map<byte[], List<KeyValue>> familyMap = getFamilyMap();
+
+        for (byte[] family : familyMap.keySet()) {
+            final List<KeyValue> kvList = familyMap.get(family);
+            final int numKVs = kvList.size();
+
+            for (int i = 0; i < numKVs; i++) {
+                KeyValue kv = kvList.get(i);
+
+                final PutRequest put = new PutRequest(getTable(), kv);
+
+                if (put != null) {
+                    // set attributes
+                    put.setDurable(getDurability() != Durability.SKIP_WAL);
+                    put.setBufferable(isBufferable());
+
+                    // hand over and attach callback
+                    client.put(put).addBoth(cbh);
+                }
+            }
+        }
+    }
 }

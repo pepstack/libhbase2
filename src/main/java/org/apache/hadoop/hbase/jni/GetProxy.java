@@ -28,90 +28,102 @@ import java.util.TreeSet;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.ParseFilter;
 import org.apache.hadoop.hbase.util.Bytes;
+
 import org.hbase.async.GetRequest;
 import org.hbase.async.HBaseClient;
 import org.hbase.async.KeyValue;
 
+/**
+ * http://opentsdb.github.io/asynchbase/javadoc/org/hbase/async/GetRequest.html
+ */
+
 public class GetProxy extends RowProxy {
-  static final ParseFilter parseFilter = new ParseFilter();
+    static final ParseFilter parseFilter = new ParseFilter();
 
-  final private Map<byte [], NavigableSet<byte []>> familyMap =
-      new TreeMap<byte [], NavigableSet<byte []>>(Bytes.BYTES_COMPARATOR);
-  private Filter filter;
-  private int maxVersions = 1;
+    final private Map<byte [], NavigableSet<byte []>> familyMap = new TreeMap<byte [], NavigableSet<byte []>>(Bytes.BYTES_COMPARATOR);
 
-  public GetProxy(final byte[] row) {
-    this.row_ = row;
-  }
+    private Filter filter;
+    private int maxVersions = 1;
 
-  public GetProxy addColumn(final byte [] family,
-      final byte [] qualifier) {
-    NavigableSet<byte[]> set = familyMap.get(family);
-    if(set == null) {
-      set = new TreeSet<byte []>(Bytes.BYTES_COMPARATOR);
-      familyMap.put(family, set);
+    public GetProxy(final byte[] row) {
+        this.row_ = row;
     }
-    if (qualifier != null) {
-      set.add(qualifier);
-    }
-    return this;
-  }
 
-  public GetProxy setFilter(final String filter) {
-    try {
-      this.filter = parseFilter.parseFilterString(filter);
-    } catch (CharacterCodingException e) {
-      // TODO Handle error
-      e.printStackTrace();
-    }
-    return this;
-  }
+    public GetProxy addColumn(final byte [] family, final byte [] qualifier) {
+        NavigableSet<byte[]> set = familyMap.get(family);
 
-  public GetProxy setMaxVersions(final int maxVersions) {
-    this.maxVersions = maxVersions;
-    return this;
-  }
-
-  Filter getFilter() {
-    return filter;
-  }
-
-  Map<byte[], NavigableSet<byte[]>> getFamilyMap() {
-    return familyMap;
-  }
-
-  int getMaxVersions() {
-    return maxVersions;
-  }
-
-  public void send(final HBaseClient client,
-      final GetCallbackHandler<Object,ArrayList<KeyValue>> cbh) {
-    final GetRequest getReq  = new GetRequest(getTable(), getRow());
-    Map<byte[], NavigableSet<byte[]>> familyMap = getFamilyMap();
-    if (familyMap.size() != 0) {
-      final int numFamilies = familyMap.size();
-      final byte[][] families = new byte[numFamilies][];
-      final byte[][][] qualifiers = new byte[numFamilies][][];
-      int idx = 0;
-      for (byte[] family : familyMap.keySet()) {
-        families[idx] = family;
-        NavigableSet<byte[]> qualifierSet = familyMap.get(family);
-        if (qualifierSet.size() == 0) {
-          qualifiers[idx] = null;
-        } else {
-          qualifiers[idx] = new byte[qualifierSet.size()][];
-          int i = 0;
-          for (byte[] qualifier : qualifierSet) {
-            qualifiers[idx][i] = qualifier;
-            ++i;
-          }
+        if(set == null) {
+            set = new TreeSet<byte []>(Bytes.BYTES_COMPARATOR);
+            familyMap.put(family, set);
         }
-        ++idx;
-      }
-      //??getReq.families(families);
-      //??getReq.qualifiers(qualifiers);
+
+        if (qualifier != null) {
+            set.add(qualifier);
+        }
+
+        return this;
     }
-    getReq.maxVersions(getMaxVersions());
-    client.get(getReq).addBoth(cbh);
-  }
+
+    public GetProxy setFilter(final String filter) {
+        try {
+            this.filter = parseFilter.parseFilterString(filter);
+        } catch (CharacterCodingException e) {
+            // TODO Handle error
+            e.printStackTrace();
+        }
+        return this;
+    }
+
+    public GetProxy setMaxVersions(final int maxVersions) {
+        this.maxVersions = maxVersions;
+        return this;
+    }
+
+    Filter getFilter() {
+        return filter;
+    }
+
+    Map<byte[], NavigableSet<byte[]>> getFamilyMap() {
+        return familyMap;
+    }
+
+    int getMaxVersions() {
+        return maxVersions;
+    }
+
+    public void send(final HBaseClient client, final GetCallbackHandler<Object,ArrayList<KeyValue>> cbh) {
+        Map<byte[], NavigableSet<byte[]>> familyMap = getFamilyMap();
+
+        final int numFamilies = familyMap.size();
+
+        if (numFamilies > 0) {
+            for (byte[] family : familyMap.keySet()) {
+                NavigableSet<byte[]> qualifierSet = familyMap.get(family);
+
+                if (qualifierSet != null) {
+                    final GetRequest getReq  = new GetRequest(getTable(), getRow());
+
+                    if (getReq != null) {
+                        getReq.family(family);
+
+                        if (qualifierSet.size() > 0) {
+                            final byte[][] qualifiers = new byte[qualifierSet.size()][];
+
+                            int i = 0;
+                            for (byte[] qualifier : qualifierSet) {
+                                qualifiers[i] = qualifier;
+
+                                ++i;
+                            }
+
+                            getReq.qualifiers(qualifiers);
+                        }
+
+                        getReq.maxVersions(getMaxVersions());
+                        client.get(getReq).addBoth(cbh);
+                    }
+                }
+            }            
+        }
+    }
 }

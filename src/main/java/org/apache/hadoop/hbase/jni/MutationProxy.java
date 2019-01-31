@@ -30,53 +30,64 @@ import org.hbase.async.HBaseClient;
 import org.hbase.async.KeyValue;
 
 public abstract class MutationProxy extends RowProxy {
-  protected Durability durability_ = Durability.USE_DEFAULT;
+    protected Durability durability_ = Durability.USE_DEFAULT;
 
-  protected boolean bufferable_ = false;
+    protected boolean bufferable_ = false;
 
-  protected Map<byte [], List<KeyValue>> familyMap =
-      new TreeMap<byte [], List<KeyValue>>(Bytes.BYTES_COMPARATOR);
+    protected Map<byte [], List<KeyValue>> familyMap = new TreeMap<byte [], List<KeyValue>>(Bytes.BYTES_COMPARATOR);
 
-  public MutationProxy addColumn(final byte[] family,
-      final byte[] qualifier, final byte[] value) {
-    return addColumn(family, qualifier, KeyValue.TIMESTAMP_NOW, value);
-  }
-
-  public MutationProxy addColumn(final byte[] family,
-      final byte[] qualifier, final long ts, final byte [] value) {
-    List<KeyValue> list = familyMap.get(family);
-    if(list == null) {
-      list = new ArrayList<KeyValue>(0);
-      familyMap.put(family, list);
+    public MutationProxy addColumn(final byte[] family, final byte[] qualifier, final byte[] value) {
+        return addColumn(family, qualifier, KeyValue.TIMESTAMP_NOW, value);
     }
-    list.add(new KeyValue(row_, family,
-        (qualifier == null ? HBaseClient.EMPTY_ARRAY : qualifier),
-        ts, (value == null ? HBaseClient.EMPTY_ARRAY : value)));
-    return this;
-  }
 
-  public Durability getDurability() {
-    return durability_;
-  }
+    public MutationProxy addColumn(final byte[] family, final byte[] qualifier, final long ts, final byte [] value) {
+        List<KeyValue> list = familyMap.get(family);
+    
+        if(list == null) {
+            list = new ArrayList<KeyValue>(0);
+            familyMap.put(family, list);
+        }
 
-  public void setDurability(final int durability) {
-    //?? this.durability_ = Durability.valueOf(durability);
-  }
+        list.add(new KeyValue(row_, family,
+            (qualifier == null ? HBaseClient.EMPTY_ARRAY : qualifier),
+            ts, (value == null ? HBaseClient.EMPTY_ARRAY : value)));
 
-  public boolean isBufferable() {
-    return bufferable_;
-  }
+        return this;
+    }
 
-  public void setBufferable(boolean bufferable) {
-    this.bufferable_ = bufferable;
-  }
+    public Durability getDurability() {
+        return durability_;
+    }
 
-  public Map<byte[], List<KeyValue>> getFamilyMap() {
-    return familyMap;
-  }
+    public void setDurability(final String durability) {
+        // Refer:
+        //   https://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Durability.html
+        //
+        // ASYNC_WAL: Write the Mutation to the WAL asynchronously
+        // FSYNC_WAL: Write the Mutation to the WAL synchronously and force the entries to disk.
+        // SKIP_WAL: Do not write the Mutation to the WAL
+        // SYNC_WAL: Write the Mutation to the WAL synchronously.
+        // USE_DEFAULT: If this is for tables durability, use HBase's global default value (SYNC_WAL).
+        //
+        // Usage:
+        //   setDurability("ASYNC_WAL");
+        //
+        this.durability_ = Durability.valueOf(durability);
+    }
 
-  public abstract Mutation toHBaseMutation();
+    public boolean isBufferable() {
+        return bufferable_;
+    }
 
-  public abstract void send(final HBaseClient client,
-      final MutationCallbackHandler<Object, Object> cbh);
+    public void setBufferable(boolean bufferable) {
+        this.bufferable_ = bufferable;
+    }
+
+    public Map<byte[], List<KeyValue>> getFamilyMap() {
+        return familyMap;
+    }
+
+    public abstract Mutation toHBaseMutation();
+
+    public abstract void send(final HBaseClient client, final MutationCallbackHandler<Object, Object> cbh);
 }

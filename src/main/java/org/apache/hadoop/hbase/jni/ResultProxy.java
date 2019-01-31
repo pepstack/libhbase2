@@ -32,8 +32,7 @@ public class ResultProxy {
   private byte[] namespace;
   private byte[] table;
 
-  public static final Comparator<KeyValue> KV_COMPARATOR =
-      new Comparator<KeyValue>() {
+  public static final Comparator<KeyValue> KV_COMPARATOR = new Comparator<KeyValue>() {
     @Override
     public int compare(KeyValue o1, KeyValue o2) {
       int d;
@@ -116,21 +115,22 @@ public class ResultProxy {
   }
 
   int indexOf(final byte [] family, final byte [] qualifier) {
-    KeyValue searchTerm = new KeyValue(
-        getRowKey(), family, qualifier, HBaseClient.EMPTY_ARRAY);
+    KeyValue searchTerm = new KeyValue(getRowKey(), family, qualifier, HBaseClient.EMPTY_ARRAY);
+
     int pos = Collections.binarySearch(kvList, searchTerm, KV_COMPARATOR);
+
     // never will exact match
     if (pos < 0) {
-      pos = (pos+1) * -1;
       // pos is now insertion point
+      pos = (pos+1) * -1;      
     }
+
     if (pos == kvList.size()) {
       return -1; // doesn't exist
     }
 
     KeyValue kv = kvList.get(pos);
-    return (Bytes.equals(family, kv.family())
-              && Bytes.equals(qualifier, kv.qualifier()))
-        ? pos : -1;
+
+    return (Bytes.equals(family, kv.family()) && Bytes.equals(qualifier, kv.qualifier()))? pos : -1;
   }
 }

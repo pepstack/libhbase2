@@ -27,63 +27,62 @@ import org.hbase.async.DeleteRequest;
 import org.hbase.async.HBaseClient;
 import org.hbase.async.KeyValue;
 
+/**
+ * http://opentsdb.github.io/asynchbase/javadoc/org/hbase/async/HBaseClient.html
+ * http://opentsdb.github.io/asynchbase/javadoc/index.html
+ */
 public class DeleteProxy extends MutationProxy {
 
-  public DeleteProxy(final byte[] row) {
-    this.row_ = row;
-  }
-
-  @Override
-  public void send(final HBaseClient client, final MutationCallbackHandler<Object, Object> cbh) {
-    final Map<byte[], List<KeyValue>> familyMap = getFamilyMap();
-    final int numFamilies = familyMap.size();
-
-    DeleteRequest del = null;
-
-    if (numFamilies > 0) {
-      final byte[][] families = new byte[numFamilies][];
-      final byte[][][] qualifiers = new byte[numFamilies][][];
-      final long[][] timestamps = new long[numFamilies][];
-      int idx = 0;
-
-      for (byte[] family : familyMap.keySet()) {
-        families[idx] = family;
-        final List<KeyValue> kvList = familyMap.get(family);
-        final int numKVs = kvList.size();
-        if (numKVs > 0) {
-          boolean hasQualifier = false;
-          qualifiers[idx] = new byte[numKVs][];
-          timestamps[idx] = new long[numKVs];
-          for (int i = 0; i < numKVs; i++) {
-            KeyValue kv = kvList.get(i);
-            if (kv.qualifier().length > 0) {
-              hasQualifier = true;
-              qualifiers[idx][i] = kv.qualifier();
-              timestamps[idx][i] = kv.timestamp();
-            }
-          }
-          if (!hasQualifier) {
-            qualifiers[idx] = null;
-            timestamps[idx] = null;
-          }
-        }
-        idx++;
-      }
-
-      //??del = new DeleteRequest(getTable(), getRow(), families, qualifiers, timestamps, getTS());
-    } else {
-      del = new DeleteRequest(getTable(), getRow());
+    public DeleteProxy(final byte[] row) {
+        this.row_ = row;
     }
-    // set attributes
-    del.setDurable(getDurability() != Durability.SKIP_WAL);
-    del.setBufferable(isBufferable());
-    // hand over and attach callback
-    client.delete(del).addBoth(cbh);
-  }
 
-  @Override
-  public Mutation toHBaseMutation() {
-    //TODO
-    return null;
-  }
+    @Override
+    public void send(final HBaseClient client, final MutationCallbackHandler<Object, Object> cbh) {
+        final Map<byte[], List<KeyValue>> familyMap = getFamilyMap();
+        final int numFamilies = familyMap.size();
+
+        if (numFamilies > 0) {
+            for (byte[] family : familyMap.keySet()) {
+                final List<KeyValue> kvList = familyMap.get(family);
+                final int numKVs = kvList.size();
+
+                if (numKVs > 0) {
+                    for (int i = 0; i < numKVs; i++) {
+                        KeyValue kv = kvList.get(i);
+
+                        // delete a specific cell
+                        DeleteRequest del = new DeleteRequest(getTable(), kv);
+
+                        if (del != null) {
+                            // set attributes
+                            del.setDurable(getDurability() != Durability.SKIP_WAL);
+                            del.setBufferable(isBufferable());
+
+                            // hand over and attach callback
+                            client.delete(del).addBoth(cbh);
+                        }
+                    }
+                }
+            }
+        } else {
+            // delete an entire row
+            DeleteRequest del = new DeleteRequest(getTable(), getRow());
+
+            if (del != null) {
+                // set attributes
+                del.setDurable(getDurability() != Durability.SKIP_WAL);
+                del.setBufferable(isBufferable());
+
+                // hand over and attach callback
+                client.delete(del).addBoth(cbh);
+            }
+        }
+    }
+
+    @Override
+    public Mutation toHBaseMutation() {
+        //TODO
+        return null;
+    }
 }

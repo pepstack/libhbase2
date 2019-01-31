@@ -22,46 +22,50 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.conf.Configuration; //DEL
+import org.apache.hadoop.hbase.HBaseConfiguration;
+
+import org.apache.hadoop.hbase.client.HTable; //DEL
+import org.apache.hadoop.hbase.client.Table;
+
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Row;
 
 public final class TableProxy {
-  protected HTable table_;
+    //protected HTable table_; //DEL
+    protected Table table_;
 
-  public TableProxy(Configuration conf, String name) throws IOException {
-    //??table_ = new HTable(conf, name);
-  }
-
-  public void setAutoFlush(boolean autoFlush) {
-    //??table_.setAutoFlush(autoFlush);
-  }
-
-  public void close() throws IOException {
-    table_.close();
-  }
-
-  public void flushCommits() throws IOException {
-    //??table_.flushCommits();
-  }
-
-  public void put(final List<PutProxy> putProxies) throws IOException {
-    List<Put> puts = new ArrayList<Put>(putProxies.size());
-    for (PutProxy putProxy : putProxies) {
-      puts.add((Put) putProxy.toHBaseMutation());
+    public TableProxy(Configuration conf, String name) throws IOException {
+        //??table_ = new HTable(conf, name);
     }
-    table_.put(puts);
-  }
 
-  public Object[] batch(final List<MutationProxy> mutations)
+    public void setAutoFlush(boolean autoFlush) {
+        //??table_.setAutoFlush(autoFlush);
+    }
+
+    public void close() throws IOException {
+        table_.close();
+    }
+
+    public void flushCommits() throws IOException {
+        //??table_.flushCommits();
+    }
+
+    public void put(final List<PutProxy> putProxies) throws IOException {
+        List<Put> puts = new ArrayList<Put>(putProxies.size());
+        for (PutProxy putProxy : putProxies) {
+            puts.add((Put) putProxy.toHBaseMutation());
+        }
+        table_.put(puts);
+    }
+
+    public Object[] batch(final List<MutationProxy> mutations)
       throws InterruptedException, IOException {
-    List<Row> actions = new ArrayList<Row>(mutations.size());
-    for (MutationProxy mutation : mutations) {
-      actions.add(mutation.toHBaseMutation());
+        List<Row> actions = new ArrayList<Row>(mutations.size());
+        for (MutationProxy mutation : mutations) {
+            actions.add(mutation.toHBaseMutation());
+        }
+        //??return table_.batch(actions);
+        return null;
     }
-    //??return table_.batch(actions);
-    return null;
-  }
-
 }
