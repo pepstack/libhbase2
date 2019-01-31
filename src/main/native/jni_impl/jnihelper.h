@@ -69,6 +69,7 @@
 
 #define HBASE_CONNECTION_FACTORY  "org/apache/hadoop/hbase/client/ConnectionFactory"
 #define HBASE_CONNECTION        "org/apache/hadoop/hbase/client/Connection"
+#define HBASE_TABLENAME         "org/apache/hadoop/hbase/TableName"
 
 
 /**

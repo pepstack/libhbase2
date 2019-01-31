@@ -22,6 +22,7 @@
 #include <errno.h>
 
 #include "hbase_admin.h"
+#include "hbase_tablename.h"
 
 #include "hbase_client.h"
 #include "hbase_config.h"
@@ -29,6 +30,10 @@
 #include "hbase_macros.h"
 #include "hbase_msgs.h"
 #include "jnihelper.h"
+
+/*
+ * TableName not String
+ */
 
 namespace hbase {
 
@@ -254,16 +259,18 @@ HBaseAdmin::TableExists(
     const char *tableName,
     JNIEnv *current_env) {
   // HBase 0.96 not implemented yet
-  if (name_space != NULL) return Status::ENoSys;
-
+  if (name_space != NULL) {return Status::ENoSys;}
   JNI_GET_ENV(current_env);
-  jstring tableNameString = env->NewStringUTF(tableName);
+
+  HBaseTableName tblName;
+  tblName.Init(tableName);
+
   JniResult result = JniHelper::InvokeMethod(
       env, jobject_, HBASE_HADMIN, "tableExists",
-      JMETHOD1(JPARAM(JAVA_STRING), "Z"), tableNameString);
+      JMETHOD1(JPARAM(HBASE_TABLENAME), "V"), tblName.GetJObject());
+
   if (result.ok()) {
-    return (result.GetValue().z != 0)
-        ? Status::Success : Status::ENoEntry;
+    return (result.GetValue().z != 0)? Status::Success : Status::ENoEntry;
   }
   return result;
 }
@@ -277,10 +284,14 @@ HBaseAdmin::TableEnabled(
   if (name_space != NULL) return Status::ENoSys;
 
   JNI_GET_ENV(current_env);
-  jstring tableNameString = env->NewStringUTF(tableName);
+  
+  HBaseTableName tblName;
+  tblName.Init(tableName);
+
   JniResult result = JniHelper::InvokeMethod(
       env, jobject_, HBASE_HADMIN, "isTableEnabled",
-      JMETHOD1(JPARAM(JAVA_STRING), "Z"), tableNameString);
+      JMETHOD1(JPARAM(HBASE_TABLENAME), "V"), tblName.GetJObject());
+
   if (result.ok()) {
     return (result.GetValue().z != 0)
         ? Status::Success : Status::HBaseTableDisabled;
@@ -296,7 +307,7 @@ HBaseAdmin::CreateTable(
     const size_t numFamilies,
     JNIEnv *current_env) {
   // HBase 0.96 not implemented yet
-  if (name_space != NULL) return Status::ENoSys;
+  if (name_space != NULL) {return Status::ENoSys;}
 
   JNI_GET_ENV(current_env);
   JniResult htd = CreateHTableDescriptor(env, tableName);
@@ -321,13 +332,17 @@ HBaseAdmin::EnableTable(
     const char *tableName,
     JNIEnv *current_env) {
   // HBase 0.96 not implemented yet
-  if (name_space != NULL) return Status::ENoSys;
+  if (name_space != NULL) {return Status::ENoSys;}
 
   JNI_GET_ENV(current_env);
-  jstring tableNameString = env->NewStringUTF(tableName);
+
+  HBaseTableName tblName;
+  tblName.Init(tableName);
+
   Status status = JniHelper::InvokeMethod(
       env, jobject_, HBASE_HADMIN, "enableTable",
-      JMETHOD1(JPARAM(JAVA_STRING), "V"), tableNameString);
+      JMETHOD1(JPARAM(HBASE_TABLENAME), "V"), tblName.GetJObject());
+
   if (status.GetCode() == HBASE_TABLE_NOT_DISABLED) {
     HBASE_LOG_WARN(Msgs::ERR_TABLE_ALREADY_ENABLED, tableName);
     return Status::Success;
