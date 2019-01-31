@@ -30,6 +30,12 @@ import org.hbase.async.HBaseClient;
 import org.hbase.async.KeyValue;
 
 public abstract class MutationProxy extends RowProxy {
+    private final static int DURABILITY_USE_DEFAULT = 0;
+    private final static int DURABILITY_SKIP_WAL    = 1;
+    private final static int DURABILITY_ASYNC_WAL   = 2;
+    private final static int DURABILITY_SYNC_WAL    = 3;
+    private final static int DURABILITY_FSYNC_WAL   = 4;
+
     protected Durability durability_ = Durability.USE_DEFAULT;
 
     protected boolean bufferable_ = false;
@@ -59,7 +65,7 @@ public abstract class MutationProxy extends RowProxy {
         return durability_;
     }
 
-    public void setDurability(final String durability) {
+    public void setDurability(final int durability) {
         // Refer:
         //   https://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Durability.html
         //
@@ -72,7 +78,17 @@ public abstract class MutationProxy extends RowProxy {
         // Usage:
         //   setDurability("ASYNC_WAL");
         //
-        this.durability_ = Durability.valueOf(durability);
+        if (durability == MutationProxy.DURABILITY_USE_DEFAULT) {
+            this.durability_ = Durability.USE_DEFAULT;
+        } else if (durability == MutationProxy.DURABILITY_SKIP_WAL) {
+            this.durability_ = Durability.SKIP_WAL;
+        } else if (durability == MutationProxy.DURABILITY_ASYNC_WAL) {
+            this.durability_ = Durability.ASYNC_WAL;            
+        } else if (durability == MutationProxy.DURABILITY_SYNC_WAL) {
+            this.durability_ = Durability.SYNC_WAL;
+        } else if (durability == MutationProxy.DURABILITY_FSYNC_WAL) {
+            this.durability_ = Durability.FSYNC_WAL;
+        }
     }
 
     public boolean isBufferable() {

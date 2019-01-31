@@ -84,12 +84,12 @@ static void hbase_put_cell (hb_client_t client)
 
     char family[] = "f1";
     char column[] = "author";
-    char value[] = "zhang";
+    char value[] = "zhangliang";
 
     hb_put_t put = NULL;
     hb_cell_t *cell = NULL;
 
-    rowkeylen = snprintf(rowkey, sizeof(rowkey), "%s", "rowkey_2");
+    rowkeylen = snprintf(rowkey, sizeof(rowkey), "%s", "rowkey222");
 
     hb_put_create(rowkey, rowkeylen, &put);
 
@@ -110,7 +110,7 @@ static void hbase_put_cell (hb_client_t client)
     cell->value = value;
     cell->value_len = strlen(value);
 
-    cell->ts = 1391111111111L;
+    cell->ts = 1391111111112L;
 
     hb_put_add_cell(put, cell);
 

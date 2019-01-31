@@ -18,6 +18,19 @@
 #ifndef HBASE_JNI_IMPL_ADMIN_H_
 #define HBASE_JNI_IMPL_ADMIN_H_
 
+/**
+ * https://hbase.apache.org/devapidocs/org/apache/hadoop/hbase/client/HBaseAdmin.html
+ *
+ *   HBaseAdmin is no longer a client API.
+ *   It is marked InterfaceAudience. Private indicating that this is an HBase-internal class as defined in:
+ *     https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/InterfaceClassification.html
+ *
+ *   There are no guarantees for backwards source / binary compatibility and methods or class
+ *     can change or go away without deprecation.
+ *
+ *   Use Connection.getAdmin() to obtain an instance of Admin instead of constructing an HBaseAdmin directly.
+ */
+
 #include <jni.h>
 
 #include "hbase_coldesc.h"

@@ -35,7 +35,7 @@ public class ClientProxy implements Closeable {
         final String zkQuorum = conf.get("hbase.zookeeper.ensemble");
         final String baseZNode = conf.get("zookeeper.znode.parent");
 
-        this.client_ = new HBaseClient(zkQuorum, baseZNode);
+        client_ = new HBaseClient(zkQuorum, baseZNode);
     }
 
     Scanner newScanner(byte[] table) {

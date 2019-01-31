@@ -18,7 +18,9 @@
  */
 package org.apache.hadoop.hbase.jni;
 
+import java.io.Closeable;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +46,7 @@ import org.apache.hadoop.hbase.client.BufferedMutator;
  * http://hbase.apache.org/devapidocs/org/apache/hadoop/hbase/client/HTable.html
  * https://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/package-summary.html
  */
-public final class TableProxy {
+public final class TableProxy implements Closeable {
     protected boolean autoFlush = false;
 
     // https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html
@@ -72,6 +74,7 @@ public final class TableProxy {
         this.autoFlush = autoFlush;
     }
 
+    @Override
     public void close() throws IOException {
         table_.close();
         mutator_.close();

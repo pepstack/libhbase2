@@ -40,8 +40,8 @@ echo -e "  ok.\n"
 
 echo "* build hello_hbase.c"
 cd $_cdir && gcc -o hello_hbase hello_hbase.c \
-    -I$_cdir/../../target/$libhbase_ver/include \
-    -L$_cdir/../../target/$libhbase_ver/lib/native -lhbase2 \
+    -I$_cdir/../../include \
+    -L$_cdir/../../lib/native -lhbase2 \
     -L$libjvm_dir -ljvm \
     -lpthread \
     -lrt
@@ -49,8 +49,8 @@ echo -e "  ok.\n"
 
 
 echo "* run target: $_cdir/hello_hbase"
-LD_LIBRARY_PATH=$_cdir/../../target/$libhbase_ver/lib/native:$libjvm_dir
-HBASE_LIB_DIR=$_cdir/../../target/$libhbase_ver/lib
+LD_LIBRARY_PATH=$_cdir/../../lib/native:$libjvm_dir
+HBASE_LIB_DIR=$_cdir/../../lib
 
 # Environment variable HBASE_CONF_DIR not set!
 HBASE_CONF_DIR="/etc/hbase/conf"

@@ -41,7 +41,7 @@
 #define HBASE_PUT               "org/apache/hadoop/hbase/client/Put"
 #define HBASE_MUTATION          "org/apache/hadoop/hbase/client/Mutation"
 #define HBASE_RESULT            "org/apache/hadoop/hbase/client/Result"
-#define HBASE_HTABLE            "org/apache/hadoop/hbase/client/HTable"
+#define HBASE_TABLE             "org/apache/hadoop/hbase/client/Table"
 #define HBASE_HADMIN            "org/apache/hadoop/hbase/client/HBaseAdmin"
 #define HBASE_TBLDSC            "org/apache/hadoop/hbase/HTableDescriptor"
 #define HBASE_CLMDSC            "org/apache/hadoop/hbase/HColumnDescriptor"
@@ -56,6 +56,7 @@
 #define CLASS_MUTATION_PROXY    "org/apache/hadoop/hbase/jni/MutationProxy"
 #define CLASS_SCANNER_PROXY     "org/apache/hadoop/hbase/jni/ScannerProxy"
 #define CLASS_TABLE_PROXY       "org/apache/hadoop/hbase/jni/TableProxy"
+#define CLASS_ADMIN_PROXY       "org/apache/hadoop/hbase/jni/AdminProxy"
 
 #define ASYNC_REMOTEEXCEPTION   "org/hbase/async/RemoteException"
 
@@ -65,6 +66,10 @@
 #define JAVA_STRING             "java/lang/String"
 #define JAVA_LIST               "java/util/List"
 #define JAVA_ARRAYLIST          "java/util/ArrayList"
+
+#define HBASE_CONNECTION_FACTORY  "org/apache/hadoop/hbase/client/ConnectionFactory"
+#define HBASE_CONNECTION        "org/apache/hadoop/hbase/client/Connection"
+
 
 /**
  * Retrieves a JNIEnv* unless one was provided.

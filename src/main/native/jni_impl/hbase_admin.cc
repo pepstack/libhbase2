@@ -48,7 +48,6 @@ hb_admin_create(
       Msgs::ERR_CONN_NULL);
   RETURN_IF_INVALID_PARAM((admin_ptr == NULL),
       Msgs::ERR_ADMIN_PTR_NULL);
-
   HBaseAdmin *admin = new HBaseAdmin();
   Status status = admin->Init(
       reinterpret_cast<HBaseConfiguration*>(conn));
@@ -225,7 +224,8 @@ HBaseAdmin::Init(
     JNIEnv *current_env) {
   JNI_GET_ENV(current_env);
   JniResult result = JniHelper::NewObject(
-      env, HBASE_HADMIN, JMETHOD1(JPARAM(HADOOP_CONF), "V"),
+      env, CLASS_ADMIN_PROXY,
+      JMETHOD1(JPARAM(HADOOP_CONF), "V"),
       conf->GetConf());
   if (result.ok()) {
     jobject_ = env->NewGlobalRef(result.GetObject());
@@ -239,7 +239,7 @@ HBaseAdmin::Close(JNIEnv *current_env) {
   if (jobject_ != NULL) {
     JNI_GET_ENV(current_env);
     JniResult result = JniHelper::InvokeMethod(
-        env, jobject_, HBASE_HADMIN, "close", "()V");
+        env, jobject_, CLASS_ADMIN_PROXY, "close", "()V");
     env->DeleteGlobalRef(jobject_);
     jobject_ = NULL;
     return result;

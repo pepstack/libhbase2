@@ -21,40 +21,40 @@ package org.apache.hadoop.hbase.jni;
 import org.hbase.async.KeyValue;
 
 public abstract class RowProxy {
-  protected byte [] row_ = null;
-  protected byte [] table_ = null;
-  protected byte [] namespace_ = null;
-  protected long ts_ = KeyValue.TIMESTAMP_NOW;
+    protected byte [] row_ = null;
+    protected byte [] table_ = null;
+    protected byte [] namespace_ = null;
+    protected long ts_ = KeyValue.TIMESTAMP_NOW;
 
-  public byte[] getRow() {
-    return row_;
-  }
+    public byte[] getRow() {
+        return row_;
+    }
 
-  public void setRow(byte[] row) {
-    this.row_ = row;
-  }
+    public void setRow(byte[] row) {
+        this.row_ = row;
+    }
 
-  public byte[] getTable() {
-    return table_;
-  }
+    public byte[] getTable() {
+        return table_;
+    }
 
-  public void setTable(byte[] table) {
-    this.table_ = table;
-  }
+    public void setTable(byte[] table) {
+        this.table_ = table;
+    }
 
-  public byte[] getNamespace() {
-    return namespace_;
-  }
+    public byte[] getNamespace() {
+        return namespace_;
+    }
 
-  public void setNamespace(byte[] namespace) {
-    this.namespace_ = namespace;
-  }
+    public void setNamespace(byte[] namespace) {
+        this.namespace_ = namespace;
+    }
 
-  public long getTS() {
-    return ts_;
-  }
+    public long getTS() {
+        return ts_;
+    }
 
-  public void setTS(long ts) {
-    this.ts_ = ts;
-  }
+    public void setTS(long ts) {
+        this.ts_ = ts;
+    }
 }
