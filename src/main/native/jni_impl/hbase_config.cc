@@ -75,7 +75,6 @@ HBaseConfiguration::Init(
   JniResult result = JniHelper::InvokeMethodS(
       env, HBASE_CONF, "create", JMETHOD1("", JPARAM(HADOOP_CONF)));
   RETURN_IF_ERROR(result);
-
   jobject_ = env->NewGlobalRef(result.GetObject());
   if (zookeeprEnsemble != NULL) {
     RETURN_IF_ERROR(
@@ -108,13 +107,13 @@ HBaseConfiguration::Init(
 }
 
 HBaseConfiguration::~HBaseConfiguration() {
-   if (jobject_ != NULL) {
-     JNIEnv *env = JniHelper::GetJNIEnv();
-     if (env != NULL) {
+  if (jobject_ != NULL) {
+    JNIEnv *env = JniHelper::GetJNIEnv();
+    if (env != NULL) {
        env->DeleteGlobalRef(jobject_);
-     }
-   }
- }
+    }
+  }
+}
 
 Status
 HBaseConfiguration::SetProperty(

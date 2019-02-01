@@ -30,7 +30,7 @@ LANG=zh_CN.UTF-8;export LANG
 ##############################################################################
 jdk_home_dir=$(echo $JAVA_HOME)
 
-libhbase_ver="libhbase2-1.0-SNAPSHOT"
+libhbase_ver="libhbase2-1.1-SNAPSHOT"
 libjvm_dir="$jdk_home_dir/jre/lib/amd64/server"
 
 echo "* clean old target: $_cdir/hello_hbase"

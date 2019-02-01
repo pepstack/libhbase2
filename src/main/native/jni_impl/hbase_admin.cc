@@ -22,7 +22,6 @@
 #include <errno.h>
 
 #include "hbase_admin.h"
-#include "hbase_tablename.h"
 
 #include "hbase_client.h"
 #include "hbase_config.h"
@@ -206,6 +205,19 @@ hb_admin_table_delete(
 } /* extern "C" */
 
 static JniResult
+CreateTableName(
+    JNIEnv *env,
+    const char *tableName) {
+  jstring tableNameString = env->NewStringUTF(tableName);
+  return JniHelper::InvokeMethodS(env  /* The JNIEnv pointer */
+      ,HBASE_TABLENAME /* Name of the class where the method can be found */
+      ,"valueOf"       /* Name of the method: TableName tn = TableName.valueOf(tableName) */
+      ,JMETHOD1(JPARAM(JAVA_STRING), JPARAM(HBASE_TABLENAME)) /* the signature of the method "(arg-types)ret-type" */
+      ,tableNameString  /* the method arguments */
+    );
+}
+
+static JniResult
 CreateHTableDescriptor(
     JNIEnv *env,
     const char *tableName) {
@@ -243,8 +255,7 @@ HBaseAdmin::Close(JNIEnv *current_env) {
   pthread_mutex_lock(&admin_mutex);
   if (jobject_ != NULL) {
     JNI_GET_ENV(current_env);
-    JniResult result = JniHelper::InvokeMethod(
-        env, jobject_, CLASS_ADMIN_PROXY, "close", "()V");
+    JniResult result = JniHelper::InvokeMethod(env, jobject_, CLASS_ADMIN_PROXY, "close", "()V");
     env->DeleteGlobalRef(jobject_);
     jobject_ = NULL;
     return result;
@@ -261,14 +272,14 @@ HBaseAdmin::TableExists(
   // HBase 0.96 not implemented yet
   if (name_space != NULL) {return Status::ENoSys;}
   JNI_GET_ENV(current_env);
-
-  HBaseTableName tblName;
-  tblName.Init(tableName);
-
-  JniResult result = JniHelper::InvokeMethod(
-      env, jobject_, HBASE_HADMIN, "tableExists",
-      JMETHOD1(JPARAM(HBASE_TABLENAME), "V"), tblName.GetJObject());
-
+  JniResult jrtn = CreateTableName(env, tableName);
+  if (!jrtn.ok()) return jrtn;
+  JniResult result = JniHelper::InvokeMethod(env  /* The JNIEnv pointer */
+      ,jobject_         /* The object to invoke the method on. */
+      ,HBASE_ADMIN      /* Name of the class where the method can be found */
+      ,"tableExists"
+      ,JMETHOD1(JPARAM(HBASE_TABLENAME), "V")
+      ,jrtn.GetObject());
   if (result.ok()) {
     return (result.GetValue().z != 0)? Status::Success : Status::ENoEntry;
   }
@@ -282,19 +293,17 @@ HBaseAdmin::TableEnabled(
     JNIEnv *current_env) {
   // HBase 0.96 not implemented yet
   if (name_space != NULL) return Status::ENoSys;
-
   JNI_GET_ENV(current_env);
-  
-  HBaseTableName tblName;
-  tblName.Init(tableName);
-
-  JniResult result = JniHelper::InvokeMethod(
-      env, jobject_, HBASE_HADMIN, "isTableEnabled",
-      JMETHOD1(JPARAM(HBASE_TABLENAME), "V"), tblName.GetJObject());
-
+  JniResult jrtn = CreateTableName(env, tableName);
+  if (!jrtn.ok()) return jrtn;
+  JniResult result = JniHelper::InvokeMethod(env
+      ,jobject_
+      ,HBASE_ADMIN
+      ,"isTableEnabled"
+      ,JMETHOD1(JPARAM(HBASE_TABLENAME), "V")
+      ,jrtn.GetObject());
   if (result.ok()) {
-    return (result.GetValue().z != 0)
-        ? Status::Success : Status::HBaseTableDisabled;
+    return (result.GetValue().z != 0)? Status::Success : Status::HBaseTableDisabled;
   }
   return result;
 }
@@ -322,8 +331,12 @@ HBaseAdmin::CreateTable(
         families[i]->JObject()));
   }
   return JniHelper::InvokeMethod(
-      env, jobject_, HBASE_HADMIN, "createTable",
-      JMETHOD1(JPARAM(HBASE_TBLDSC), "V"), htd.GetObject());
+      env
+      ,jobject_
+      ,HBASE_ADMIN
+      ,"createTable"
+      ,JMETHOD1(JPARAM(HBASE_TBLDSC), "V")
+      ,htd.GetObject());
 }
 
 Status
@@ -333,16 +346,14 @@ HBaseAdmin::EnableTable(
     JNIEnv *current_env) {
   // HBase 0.96 not implemented yet
   if (name_space != NULL) {return Status::ENoSys;}
-
   JNI_GET_ENV(current_env);
-
-  HBaseTableName tblName;
-  tblName.Init(tableName);
-
-  Status status = JniHelper::InvokeMethod(
-      env, jobject_, HBASE_HADMIN, "enableTable",
-      JMETHOD1(JPARAM(HBASE_TABLENAME), "V"), tblName.GetJObject());
-
+  JniResult jrtn = CreateTableName(env, tableName);
+  if (!jrtn.ok()) return jrtn;
+  Status status = JniHelper::InvokeMethod(env, jobject_
+    ,HBASE_ADMIN
+    ,"enableTable"
+    ,JMETHOD1(JPARAM(HBASE_TABLENAME), "V")
+    ,jrtn.GetObject());
   if (status.GetCode() == HBASE_TABLE_NOT_DISABLED) {
     HBASE_LOG_WARN(Msgs::ERR_TABLE_ALREADY_ENABLED, tableName);
     return Status::Success;
@@ -357,12 +368,14 @@ HBaseAdmin::DisableTable(
     JNIEnv *current_env) {
   // HBase 0.96 not implemented yet
   if (name_space != NULL) return Status::ENoSys;
-
   JNI_GET_ENV(current_env);
-  jstring tableNameString = env->NewStringUTF(tableName);
-  Status status = JniHelper::InvokeMethod(
-      env, jobject_, HBASE_HADMIN, "disableTable",
-      JMETHOD1(JPARAM(JAVA_STRING), "V"), tableNameString);
+  JniResult jrtn = CreateTableName(env, tableName);
+  if (!jrtn.ok()) return jrtn;
+  Status status = JniHelper::InvokeMethod(env, jobject_
+    ,HBASE_ADMIN
+    ,"disableTable"
+    ,JMETHOD1(JPARAM(HBASE_TABLENAME), "V")
+    ,jrtn.GetObject());
   if (status.GetCode() == HBASE_TABLE_DISABLED) {
     HBASE_LOG_WARN(Msgs::ERR_TABLE_ALREADY_DISABLED, tableName);
     return Status::Success;
@@ -377,17 +390,19 @@ HBaseAdmin::DeleteTable(
     JNIEnv *current_env) {
   // HBase 0.96 not implemented yet
   if (name_space != NULL) return Status::ENoSys;
-
   JNI_GET_ENV(current_env);
+  JniResult jrtn = CreateTableName(env, tableName);
+  if (!jrtn.ok()) return jrtn;
   Status status = DisableTable(name_space, tableName, env);
   if (!status.ok()
       && status.GetCode() != HBASE_TABLE_DISABLED) {
     return status;
-  }
-  jstring tableNameString = env->NewStringUTF(tableName);
-  return JniHelper::InvokeMethod(
-      env, jobject_, HBASE_HADMIN, "deleteTable",
-      JMETHOD1(JPARAM(JAVA_STRING), "V"), tableNameString);
+  }  
+  return JniHelper::InvokeMethod(env, jobject_
+    ,HBASE_ADMIN
+    ,"deleteTable"
+    ,JMETHOD1(JPARAM(HBASE_TABLENAME), "V")
+    ,jrtn.GetObject());
 }
 
 } /* namespace hbase */

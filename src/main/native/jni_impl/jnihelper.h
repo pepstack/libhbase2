@@ -42,7 +42,7 @@
 #define HBASE_MUTATION          "org/apache/hadoop/hbase/client/Mutation"
 #define HBASE_RESULT            "org/apache/hadoop/hbase/client/Result"
 #define HBASE_TABLE             "org/apache/hadoop/hbase/client/Table"
-#define HBASE_HADMIN            "org/apache/hadoop/hbase/client/HBaseAdmin"
+#define HBASE_ADMIN             "org/apache/hadoop/hbase/client/Admin"
 #define HBASE_TBLDSC            "org/apache/hadoop/hbase/HTableDescriptor"
 #define HBASE_CLMDSC            "org/apache/hadoop/hbase/HColumnDescriptor"
 #define HBASE_DURABILITY        "org/apache/hadoop/hbase/client/Durability"
