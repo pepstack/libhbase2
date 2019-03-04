@@ -25,6 +25,9 @@
 
 #include <hbase/hbase.h>
 
+#include "wait_done.h"
+
+
 /*
  * Sample code to illustrate usage of libhbase APIs
  */
@@ -35,10 +38,14 @@ extern  "C" {
 
 #define HTABLE_NAME  "libhbase_test"
 
+#define GET_THREADS  400
+#define GET_COUNT_MAX  1000000
+
+
 /* = hbase.zookeeper.ensemble
  *   "zkhost:zkport,zkhost2:zkport,zkhost3:zkport,..."
  */
-#define ZK_QUORUM    "localhost:2181"
+#define ZK_QUORUM    "localhost:2182"
 
 /* = zookeeper.znode.parent */
 #define ZK_ZNODE_ROOT   NULL
@@ -89,7 +96,7 @@ static void hbase_put_cell (hb_client_t client)
     hb_put_t put = NULL;
     hb_cell_t *cell = NULL;
 
-    rowkeylen = snprintf(rowkey, sizeof(rowkey), "%s", "rowkey222");
+    rowkeylen = snprintf(rowkey, sizeof(rowkey), "%s", "rowkey222222");
 
     hb_put_create(rowkey, rowkeylen, &put);
 
@@ -126,11 +133,60 @@ static void hbase_put_cell (hb_client_t client)
 }
 
 
-static void hbase_get_cell (hb_client_t client)
+static void printRow(const hb_result_t result, void * threadid)
+{
+    size_t i;
+    const byte_t *key = NULL;
+    size_t key_len = 0;
+    hb_result_get_key(result, &key, &key_len);
+
+    size_t cell_count = 0;
+
+    hb_result_get_cell_count(result, &cell_count);
+
+    printf("[%p] Row='%.*s', cell count=%d\n", threadid, key_len, key, cell_count);
+
+    const hb_cell_t **cells;
+    hb_result_get_cells(result, &cells, &cell_count);
+
+    for (i = 0; i < cell_count; ++i) {
+        printf("[%p] Cell %d: family='%.*s', qualifier='%.*s', value='%.*s', timestamp=%lld.\n",
+            threadid,
+            i,
+            cells[i]->family_len, cells[i]->family,
+            cells[i]->qualifier_len, cells[i]->qualifier,
+            cells[i]->value_len, cells[i]->value, cells[i]->ts);
+    }
+}
+
+
+static void get_callback(int32_t err, hb_client_t client, hb_get_t get, hb_result_t result, void *extra)
+{
+    wait_done_t * done = (wait_done_t *) extra;
+
+    if (err == 0) {
+        const char *table_name;
+        size_t table_name_len;
+
+        hb_result_get_table(result, &table_name, &table_name_len);
+
+        printf("[%p] get table: {%.*s}", done->opaque, table_name_len, table_name);
+
+        printRow(result, done->opaque);
+    }
+
+    hb_result_destroy(result);
+    hb_get_destroy(get);
+
+    wait_done_set(done, err, NULL);
+}
+
+
+static void hbase_get_cell (hb_client_t client, wait_done_t *getdone)
 {
     char rowkey[256];
     size_t keylen;
-   
+
     hb_get_t get = NULL;
 
     keylen = snprintf(rowkey, sizeof(rowkey), "%s", "rowkey001");
@@ -141,26 +197,52 @@ static void hbase_get_cell (hb_client_t client)
 
     hb_get_set_table(get, HTABLE_NAME, strlen(HTABLE_NAME));
 
-    /* up to ten versions of each column */
+    // up to ten versions of each column
     hb_get_set_num_versions(get, 10);
 
-    hb_get_send(client, get, NULL, NULL);
+    hb_get_send(client, get, get_callback, getdone);
 
-    sleep(1);
+    wait_done_until(getdone);
+}
 
-    hb_get_destroy(get);
+
+static void * get_cell_thread(void * arg)
+{
+    int i, retcode = -1;
+
+    hb_client_t client = (hb_client_t) arg;
+    assert(client);
+
+    wait_done_t * getdone = wait_done_create(0, (void *) pthread_self());
+    assert(getdone);
+
+    printf("[%p] thread starting ...\n", getdone->opaque);
+
+    for (i = 0; i < GET_COUNT_MAX; i++) {
+        hbase_get_cell(client, getdone);
+    }
+
+    retcode = getdone->result;
+
+    printf("[%p] thread exit(%d).\n", getdone->opaque, retcode);
+
+    wait_done_discard(getdone);
+
+    return (void *) (0);
 }
 
 
 int main (int argc, char *argv[])
 {
-    int rc = 0;
+    int i, rc = 0;
 
     hb_connection_t connection = NULL;
     hb_client_t client = NULL;
     hb_put_t put = NULL;
 
-    printf("hello hbase start...\n");
+    pthread_t get_threads[GET_THREADS];
+
+    printf("hello hbase start (threads=%d)...\n", GET_THREADS);
 
     if (argc > 1) {
         printf("ZK_QUORUM='%s'\n", argv[1]);
@@ -179,7 +261,9 @@ int main (int argc, char *argv[])
         goto cleanup;
     }
 
+    /* not suitable for hbase-2
     ensure_hbase_table(connection, HTABLE_NAME);
+    */
 
     hb_client_create(connection, &client);
     if (rc == 0) {
@@ -189,11 +273,23 @@ int main (int argc, char *argv[])
         goto cleanup;
     }
 
-    hbase_get_cell(client);
+    for (i = 0; i < GET_THREADS; i++) {
+        if (pthread_create(&get_threads[i], NULL, (void *) get_cell_thread, (void*) client) != 0) {
+            perror("pthread_create");
+            exit(-1);
+        }
+
+    }
+
+    for (i = 0; i < GET_THREADS; i++) {
+        void *res;
+
+        if (pthread_join(get_threads[i], (void **) &res) != 0) {
+            perror("pthread_join");
+        }
+    }
 
     hbase_put_cell(client);
-
-    sleep(1);
 
 cleanup:
     if (client) {
@@ -203,6 +299,10 @@ cleanup:
     if (connection) {
         hb_connection_destroy(connection);
     }
+
+    printf("cleanup.\n");
+
+    sleep(300);
 
     return rc;
 }

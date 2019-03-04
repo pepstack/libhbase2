@@ -55,7 +55,8 @@ HBASE_LIB_DIR=$_cdir/../../target/$libhbase_ver/lib
 # Environment variable HBASE_CONF_DIR not set!
 HBASE_CONF_DIR="/etc/hbase/conf"
 
-ZK_QUORUM="ha06.ztgame.com:2181,ha07.ztgame.com:2181,ha08.ztgame.com:2181"
+##ZK_QUORUM="ha06.ztgame.com:2181,ha07.ztgame.com:2181,ha08.ztgame.com:2181"
+ZK_QUORUM="localhost:2182"
 
 export LD_LIBRARY_PATH && \
 export HBASE_LIB_DIR && \
