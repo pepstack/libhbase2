@@ -38,8 +38,8 @@ extern  "C" {
 
 #define HTABLE_NAME  "libhbase_test"
 
-#define GET_THREADS  400
-#define GET_COUNT_MAX  1000000
+#define GET_THREADS    400
+#define GET_COUNT_MAX  200000
 
 
 /* = hbase.zookeeper.ensemble
@@ -164,7 +164,7 @@ static void get_callback(int32_t err, hb_client_t client, hb_get_t get, hb_resul
 {
     wait_done_t * done = (wait_done_t *) extra;
 
-    if (err == 0) {
+    if (err == 0 && result) {
         const char *table_name;
         size_t table_name_len;
 
@@ -174,8 +174,11 @@ static void get_callback(int32_t err, hb_client_t client, hb_get_t get, hb_resul
 
         printRow(result, done->opaque);
     }
+    
+    if (result) {
+        hb_result_destroy(result);
+    }
 
-    hb_result_destroy(result);
     hb_get_destroy(get);
 
     wait_done_set(done, err, NULL);
@@ -193,16 +196,21 @@ static void hbase_get_cell (hb_client_t client, wait_done_t *getdone)
 
     hb_get_create(rowkey, keylen, &get);
 
-    hb_get_add_column(get, "f1", 2, NULL, 0);
+    //hb_get_add_column(get, "f1", 2, NULL, 0);
 
-    hb_get_set_table(get, HTABLE_NAME, strlen(HTABLE_NAME));
+    //hb_get_set_table(get, HTABLE_NAME, strlen(HTABLE_NAME));
 
     // up to ten versions of each column
-    hb_get_set_num_versions(get, 10);
+    //hb_get_set_num_versions(get, 10);
 
-    hb_get_send(client, get, get_callback, getdone);
+    //hb_get_send(client, get, get_callback, getdone);
 
-    wait_done_until(getdone);
+    printf("[%p] ...\n", (void *) pthread_self());
+
+    hb_get_destroy(get);
+
+    //wait_done_set(getdone, 0, NULL);
+    //wait_done_until(getdone);
 }
 
 
@@ -273,6 +281,9 @@ int main (int argc, char *argv[])
         goto cleanup;
     }
 
+    time_t t0 = time(0);
+    printf("start: %ju\n", t0);
+
     for (i = 0; i < GET_THREADS; i++) {
         if (pthread_create(&get_threads[i], NULL, (void *) get_cell_thread, (void*) client) != 0) {
             perror("pthread_create");
@@ -300,9 +311,9 @@ cleanup:
         hb_connection_destroy(connection);
     }
 
-    printf("cleanup.\n");
-
-    sleep(300);
+    time_t t1 = time(0);
+    printf("cleanup: %ju. elapsed time=%ju. total get calls=%ju. avg %.0lf/second.\n",
+        t1, t1 - t0, GET_THREADS * GET_COUNT_MAX, GET_THREADS * GET_COUNT_MAX / (t1 - t0 + 0.1));
 
     return rc;
 }
