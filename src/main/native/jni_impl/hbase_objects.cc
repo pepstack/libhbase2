@@ -20,20 +20,24 @@
 
 #include "jnihelper.h"
 
-namespace hbase {
+namespace hbase
+{
 
-JniObject::~JniObject() {
-  Destroy();
+JniObject::~JniObject()
+{
+    Destroy();
 }
 
-Status
-JniObject::Destroy(JNIEnv *current_env) {
-  if (jobject_ != NULL) {
-    JNI_GET_ENV(current_env);
-    env->DeleteGlobalRef(jobject_);
-    jobject_= NULL;
-  }
-  return Status::Success;
+
+Status JniObject::Destroy(JNIEnv *current_env)
+{
+    if (jobject_ != NULL) {
+        JNI_GET_ENV(current_env);
+        env->DeleteGlobalRef(jobject_);
+        jobject_= NULL;
+    }
+
+    return Status::Success;
 }
 
 } /* namespace hbase */

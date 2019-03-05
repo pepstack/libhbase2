@@ -25,25 +25,31 @@
 #include "hbase_macros.h"
 #include "jnihelper.h"
 
-namespace hbase {
+namespace hbase
+{
 
-Status
-Row::Init(
-    const char *CLASS_NAME,
-    const byte_t *rowKey,
-    const size_t rowKeyLen,
-    JNIEnv *current_env) {
-  JNI_GET_ENV(current_env);
-  JniResult result = JniHelper::CreateJavaByteArray(
-      env, rowKey, 0, rowKeyLen);
-  RETURN_IF_ERROR(result);
-  result = JniHelper::NewObject(
-      env, CLASS_NAME, "([B)V", result.GetObject());
-  if (result.ok()) {
-    jobject_ = env->NewGlobalRef(result.GetObject());
-  }
-  return result;
+Status Row::Init(const char *CLASS_NAME, const byte_t *rowKey, const size_t rowKeyLen, JNIEnv *current_env)
+{
+    JNI_GET_ENV(current_env);
+
+    JniResult result(0);
+    JniHelper::CreateJavaByteArray(env, rowKey, 0, rowKeyLen, result);
+    RETURN_IF_ERROR(result);
+
+    jobject obj = result.DetachObject();
+
+    Status status = JniHelper::NewObject(env, CLASS_NAME, "([B)V", obj);
+
+    if (status.ok()) {
+        jobject_ = env->NewGlobalRef(obj);
+    } else {
+        jobject_ = NULL;
+        env->DeleteLocalRef(obj);
+    }
+
+    return status;
 }
+
 
 Status
 Row::SetRowKey(

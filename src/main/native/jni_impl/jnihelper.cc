@@ -116,9 +116,25 @@ typedef enum {
     REF_GLOBAL
 } RefType;
 
-JniResult::JniResult(int32_t code, const char *msg)
-: Status(code, msg) {
+
+JniResult::JniResult(int32_t code, const char *msg) : Status(code, msg)
+{
 }
+
+
+Status JniResult::Destroy(JNIEnv *current_env)
+{
+    jobject obj = value.l;
+    if (obj != NULL) {
+        value.l = NULL;
+
+        JNI_GET_ENV(current_env);
+        env->DeleteGlobalRef(obj);
+    }
+
+    return Status::Success;
+}
+
 
 /**
  * MAX_HASH_TABLE_ELEM: The maximum no. of entries in the hashtable.
@@ -783,27 +799,49 @@ JniHelper::NewObject(
   return result;
 }
 
-JniResult
-JniHelper::CreateJavaByteArray(
-    JNIEnv *env,
-    const byte_t *buf,
-    const jsize start,
-    const jsize len) {
-  JniResult result;
-  if (buf == NULL || len < 0) {
-    result.SetCode(EINVAL);
-  } else {
-    result.value.l = env->NewByteArray(len);
-    if (result.value.l == NULL) {
-      HBASE_LOG_ERROR("Unable to create Java byte[] with length %d", len);
-      result.SetCode(CheckException(env));
+
+int32_t JniHelper::CreateJavaByteArray(JNIEnv *env, const byte_t *buf, const jsize start, const jsize len, JniResult &result)
+{
+    if (buf == NULL || len < 0) {
+        result.SetCode(EINVAL);
     } else {
-      env->SetByteArrayRegion(
-          (jbyteArray)result.value.l, start, len, (SETBYTEARRAYREGIONCAST)buf);
+        /* env->DeleteLocalRef(result.value.l); */
+        result.value.l = env->NewByteArray(len);
+
+        if (result.value.l == NULL) {
+            HBASE_LOG_ERROR("Unable to create Java byte[] with length %d", len);
+            result.SetCode(CheckException(env));
+        } else {
+            env->SetByteArrayRegion((jbyteArray) result.value.l, start, len, (SETBYTEARRAYREGIONCAST) buf);
+            result.SetCode(0);
+        }
     }
-  }
-  return result;
+
+    return result.GetCode();
 }
+
+
+JniResult JniHelper::CreateJavaByteArray(JNIEnv *env, const byte_t *buf, const jsize start, const jsize len)
+{
+    JniResult result;
+
+    if (buf == NULL || len < 0) {
+        result.SetCode(EINVAL);
+    } else {
+        /* env->DeleteLocalRef(result.value.l); */
+        result.value.l = env->NewByteArray(len);
+
+        if (result.value.l == NULL) {
+            HBASE_LOG_ERROR("Unable to create Java byte[] with length %d", len);
+            result.SetCode(CheckException(env));
+        } else {
+            env->SetByteArrayRegion((jbyteArray) result.value.l, start, len, (SETBYTEARRAYREGIONCAST) buf);
+        }
+    }
+
+    return result;
+}
+
 
 Status
 JniHelper::CreateByteArray(

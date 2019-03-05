@@ -26,22 +26,23 @@
 #include "hbase_status.h"
 #include "jnihelper.h"
 
-namespace hbase {
+namespace hbase
+{
 
-class Get : public Row {
+class Get : public Row
+{
 public:
-  Get() {}
+    Get() {}
 
-  ~Get() {}
+    ~Get() {}
 
-  Status AddColumn(const byte_t *family, const size_t familyLen,
-      const byte_t *qualifier, const size_t qualifierLen, JNIEnv *current_env=NULL);
+    Status AddColumn(const byte_t *family, const size_t familyLen, const byte_t *qualifier, const size_t qualifierLen, JNIEnv *current_env=NULL);
 
-  Status SetNumVersions(const int32_t numVersions, JNIEnv *current_env=NULL);
+    Status SetNumVersions(const int32_t numVersions, JNIEnv *current_env=NULL);
 
-  Status SetFilter(const char *filter, JNIEnv *current_env=NULL);
+    Status SetFilter(const char *filter, JNIEnv *current_env=NULL);
 
-  friend class HTable;
+    friend class HTable;
 };
 
 } /* namespace hbase */

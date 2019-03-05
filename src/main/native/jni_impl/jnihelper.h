@@ -113,39 +113,59 @@ class JniLocalFrame {
   JNIEnv *env_;
 };
 
-class JniResult : public Status {
+
+class JniResult : public Status
+{
 public:
-  JniResult(int32_t code=0, const char *msg="");
+    JniResult(int32_t code=0, const char *msg="");
 
-  jvalue GetValue() { return value; }
+    jvalue GetValue()
+    {
+        return value;
+    }
 
-  jobject GetObject() { return value.l; }
+    jobject GetObject()
+    {
+        return value.l;
+    }
 
-  friend class JniHelper;
+    jobject DetachObject()
+    {
+        jobject obj = value.l;
+        value.l = NULL;
+        return obj;
+    }
+
+    Status Destroy(JNIEnv *current_env = NULL);
+
+    friend class JniHelper;
 
 private:
-  jvalue        value;
+    jvalue  value;
 };
+
 
 /**
  * All HBase object wrapping a JAVA proxy object derives from JniObject.
  */
-class JniObject {
+class JniObject
+{
 public:
-  JniObject() : jobject_(NULL) {}
+    JniObject() : jobject_(NULL) {}
 
-  JniObject(jobject object) : jobject_(object) {}
+    JniObject(jobject object) : jobject_(object) {}
 
-  virtual ~JniObject();
+    virtual ~JniObject();
 
-  jobject JObject() const { return jobject_; }
+    jobject JObject() const { return jobject_; }
 
 protected:
-  jobject jobject_;
+    jobject jobject_;
 
 private:
-  Status Destroy(JNIEnv *current_env=NULL);
+    Status Destroy(JNIEnv *current_env=NULL);
 };
+
 
 class JniHelper {
 public:
@@ -225,6 +245,13 @@ public:
    *
    * @returns A JniResult referring to the created byte array.
    */
+  static int32_t CreateJavaByteArray (
+    JNIEnv *env,
+    const byte_t *buf,
+    const jsize start,
+    const jsize len,
+    JniResult &result);
+
   static JniResult CreateJavaByteArray(
       JNIEnv *env,
       const byte_t *buf,

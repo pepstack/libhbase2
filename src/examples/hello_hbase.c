@@ -39,7 +39,7 @@ extern  "C" {
 #define HTABLE_NAME  "libhbase_test"
 
 #define GET_THREADS    400
-#define GET_COUNT_MAX  200000
+#define GET_COUNT_MAX  2000000
 
 
 /* = hbase.zookeeper.ensemble
@@ -185,14 +185,9 @@ static void get_callback(int32_t err, hb_client_t client, hb_get_t get, hb_resul
 }
 
 
-static void hbase_get_cell (hb_client_t client, wait_done_t *getdone)
+static void hbase_get_cell (hb_client_t client, wait_done_t *getdone, char *rowkey, size_t keylen)
 {
-    char rowkey[256];
-    size_t keylen;
-
     hb_get_t get = NULL;
-
-    keylen = snprintf(rowkey, sizeof(rowkey), "%s", "rowkey001");
 
     hb_get_create(rowkey, keylen, &get);
 
@@ -224,10 +219,19 @@ static void * get_cell_thread(void * arg)
     wait_done_t * getdone = wait_done_create(0, (void *) pthread_self());
     assert(getdone);
 
+    char rowkey[16384];
+    size_t keylen = sizeof(rowkey) - 1;
+
+    for (i = 0; i < keylen; i++) {
+        rowkey[i] = '1';
+    }
+    rowkey[keylen] = 0;
+    
+
     printf("[%p] thread starting ...\n", getdone->opaque);
 
     for (i = 0; i < GET_COUNT_MAX; i++) {
-        hbase_get_cell(client, getdone);
+        hbase_get_cell(client, getdone, rowkey, keylen);
     }
 
     retcode = getdone->result;

@@ -27,31 +27,30 @@ namespace hbase {
 
 class Status {
 public:
-  Status(int32_t code, const char *msg="")
-      : code_(code), msg_(msg) { }
+    Status(int32_t code, const char *msg="") : code_(code), msg_(msg) { }
 
-  void SetCode(int32_t code) {code_ = code;}
+    void SetCode(int32_t code) {code_ = code;}
 
-  int32_t GetCode() { return code_; }
+    int32_t GetCode() { return code_; }
 
-  bool ok() const { return code_ == 0; }
+    bool ok() const { return code_ == 0; }
 
-  static const Status Success;
-  static const Status EInvalid;
-  static const Status ENoEntry;
-  static const Status ENoMem;
-  static const Status ENoSys;
-  static const Status ERange;
-  static const Status EAgain;
-  static const Status ENoBufs;
-  static const Status EBusy;
+    static const Status Success;
+    static const Status EInvalid;
+    static const Status ENoEntry;
+    static const Status ENoMem;
+    static const Status ENoSys;
+    static const Status ERange;
+    static const Status EAgain;
+    static const Status ENoBufs;
+    static const Status EBusy;
 
-  static const Status HBaseInternalError;
-  static const Status HBaseTableDisabled;
+    static const Status HBaseInternalError;
+    static const Status HBaseTableDisabled;
 
 private:
-  int32_t     code_;
-  std::string msg_;
+    int32_t     code_;
+    std::string msg_;
 };
 
 } /* namespace hbase */

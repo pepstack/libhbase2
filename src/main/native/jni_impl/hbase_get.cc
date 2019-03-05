@@ -33,32 +33,30 @@ extern "C" {
 /**
  * Creates an hb_get_t object and populate the handle get_ptr.
  */
-HBASE_API int32_t
-hb_get_create(
-    const byte_t *rowkey,
-    const size_t rowkey_len,
-    hb_get_t *get_ptr) {
-  RETURN_IF_INVALID_PARAM((rowkey == NULL),
-      Msgs::ERR_KEY_NULL);
-  RETURN_IF_INVALID_PARAM((rowkey_len <= 0),
-      Msgs::ERR_KEY_LEN, rowkey_len);
-  RETURN_IF_INVALID_PARAM((get_ptr == NULL),
-      Msgs::ERR_GETPTR_NULL);
+HBASE_API int32_t hb_get_create (const byte_t *rowkey, const size_t rowkey_len, hb_get_t *get_ptr)
+{
+    RETURN_IF_INVALID_PARAM((rowkey == NULL), Msgs::ERR_KEY_NULL);
+    RETURN_IF_INVALID_PARAM((rowkey_len <= 0), Msgs::ERR_KEY_LEN, rowkey_len);
+    RETURN_IF_INVALID_PARAM((get_ptr == NULL), Msgs::ERR_GETPTR_NULL);
 
-  *get_ptr = NULL;
-  Get *get = new Get();
-  if (get == NULL) {
-    return ENOMEM;
-  }
-  Status status = get->Init(
-      CLASS_GET_PROXY, rowkey, rowkey_len);
-  if (UNLIKELY(!status.ok())) {
-    delete get;
-    return status.GetCode();
-  }
-  *get_ptr = reinterpret_cast<hb_get_t> (get);
-  return 0;
+    *get_ptr = NULL;
+    Get *get = new Get();
+
+    if (get == NULL) {
+        return ENOMEM;
+    }
+
+    Status status = get->Init(CLASS_GET_PROXY, rowkey, rowkey_len);
+
+    if (UNLIKELY(!status.ok())) {
+        delete get;
+        return status.GetCode();
+    }
+
+    *get_ptr = reinterpret_cast<hb_get_t> (get);
+    return 0;
 }
+
 
 /**
  * Sets the row key, required.
