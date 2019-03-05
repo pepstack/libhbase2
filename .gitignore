@@ -7,11 +7,10 @@
 .project
 .settings
 build
-gradle-wrapper.properties
-gradle-wrapper.jar
 target
 *~
 *.patch
 *.log
 *.o
+src/examples/core.*
 hello_hbase
