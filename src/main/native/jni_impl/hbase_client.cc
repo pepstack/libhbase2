@@ -260,7 +260,7 @@ HBaseClient::SendMutation(
   JNI_GET_ENV(current_env);
   JniResult result = JniHelper::InvokeMethod(
       env, jobject_, CLASS_CLIENT_PROXY, "sendMutation",
-      "(L"CLASS_MUTATION_PROXY";JJJJ)V", mutation->JObject(),
+      "(L" CLASS_MUTATION_PROXY ";JJJJ)V", mutation->JObject(),
       (jlong) cb, (jlong) this, (jlong) mutation, (jlong) extra);
   return Status::Success;
 }
@@ -274,7 +274,7 @@ HBaseClient::SendGet(
   JNI_GET_ENV(current_env);
   JniResult result = JniHelper::InvokeMethod(
       env, jobject_, CLASS_CLIENT_PROXY, "sendGet",
-      "(L"CLASS_GET_PROXY";JJJJ)V", get->JObject(),
+      "(L" CLASS_GET_PROXY ";JJJJ)V", get->JObject(),
       (jlong) cb, (jlong) this, (jlong) get, (jlong) extra);
   return Status::Success;
 }

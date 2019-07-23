@@ -124,9 +124,9 @@ const char *Msgs::ERR_PUTS_NULL = "'hb_put_t[]' is NULL.";
 
 const char *Msgs::ERR_NUM_PUTS = "'num_puts' %d is <= 0.";
 
-const char *Msgs::ERR_TIMESTAMP1 = "'timestamp' "PRIu64" is <= 0.";
+const char *Msgs::ERR_TIMESTAMP1 = "'timestamp' " PRIu64 " is <= 0.";
 
-const char *Msgs::ERR_TIMESTAMP2 = "'timestamp' "PRIu64" is <= 0 and != -1.";
+const char *Msgs::ERR_TIMESTAMP2 = "'timestamp' " PRIu64 " is <= 0 and != -1.";
 
 const char *Msgs::ERR_NUM_VERSIONS = "'num_versions' is <= 0.";
 

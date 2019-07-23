@@ -175,7 +175,7 @@ Mutation::AddColumn(
 
   return JniHelper::InvokeMethod(
       env, jobject_, CLASS_MUTATION_PROXY,
-      "addColumn", "([B[BJ[B)L"CLASS_MUTATION_PROXY";",
+      "addColumn", "([B[BJ[B)L" CLASS_MUTATION_PROXY ";",
       family.GetObject(), qualObj, (jlong)ts, valueObj);
 }
 

@@ -151,7 +151,7 @@ HColumnDescriptor::SetMaxVersions(
   JNI_GET_ENV(current_env);
   return JniHelper::InvokeMethod(
       env, jobject_, HBASE_CLMDSC, "setMaxVersions",
-      "(I)"JPARAM(HBASE_CLMDSC), maxVersions);
+      "(I)" JPARAM(HBASE_CLMDSC), maxVersions);
 }
 
 Status
@@ -161,7 +161,7 @@ HColumnDescriptor::SetMinVersions(
   JNI_GET_ENV(current_env);
   return JniHelper::InvokeMethod(
       env, jobject_, HBASE_CLMDSC, "setMinVersions",
-      "(I)"JPARAM(HBASE_CLMDSC), minVersions);
+      "(I)" JPARAM(HBASE_CLMDSC), minVersions);
 }
 
 Status
@@ -171,7 +171,7 @@ HColumnDescriptor::SetTimeToLive(
   JNI_GET_ENV(current_env);
   return JniHelper::InvokeMethod(
       env, jobject_, HBASE_CLMDSC, "setTimeToLive",
-      "(I)"JPARAM(HBASE_CLMDSC), ttl);
+      "(I)" JPARAM(HBASE_CLMDSC), ttl);
 }
 
 Status
@@ -181,7 +181,7 @@ HColumnDescriptor::SetInMemory(
   JNI_GET_ENV(current_env);
   return JniHelper::InvokeMethod(
       env, jobject_, HBASE_CLMDSC, "setInMemory",
-      "(Z)"JPARAM(HBASE_CLMDSC), (inMemory ? 1 : 0));
+      "(Z)" JPARAM(HBASE_CLMDSC), (inMemory ? 1 : 0));
 }
 
 } /* namespace hbase */

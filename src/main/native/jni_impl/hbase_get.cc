@@ -207,7 +207,7 @@ Get::AddColumn(
 
   return JniHelper::InvokeMethod(
       env, jobject_, CLASS_GET_PROXY, "addColumn",
-      "([B[B)L"CLASS_GET_PROXY";", family.GetObject(), qualifier);
+      "([B[B)L" CLASS_GET_PROXY ";", family.GetObject(), qualifier);
 }
 
 Status
