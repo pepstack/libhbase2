@@ -444,7 +444,7 @@ JniHelper::ParseJavaException(
         return HBASE_INTERNAL_ERR;
       }
       getMessage = GetClassMethodId(env, cls, JAVA_THROWABLE,
-          "getMessage", "()L"JAVA_STRING";", INSTANCE);
+          "getMessage", "()L" JAVA_STRING ";", INSTANCE);
       if (getMessage == NULL) {
         return HBASE_INTERNAL_ERR;
       }
